@@ -1,3 +1,9 @@
+<?php
+require('./core/database.php');
+$new_product = $db->getAll("select * from product order by id desc limit 4");
+$hot_product = $db->getAll("select * from product order by buyed desc limit 4");
+$view_product = $db->getAll("select * from product order by view desc limit 4");
+?>
 <?php include('./layout/head.php') ?>
 <div class="row" style="margin-top: 10px">
     <div class="panel panel-info">
