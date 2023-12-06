@@ -1,15 +1,17 @@
 
-</body>
-</html>
 
 <?php
 require('./core/database.php');
 require('./core/flash.php');
 require('./core/cart.php');
-$total_amount = 0;
+
 $cart = new Cart;
 $carts = $cart->all($db);
+$total_amount = 0;
 
+        foreach ($carts as $item) {
+            $total_amount += $item['sub_total'];
+        }
 
 if (isset($_POST['submit'])) {
     $adress_str = $_POST['adress'] . ' - ' . $_POST['area'];
@@ -73,10 +75,6 @@ if (isset($_POST['submit'])) {
 
 if (count($carts) == 0) {
     header('location: ./index.php');
-}
-
-foreach ($carts as $item) {
-    $total_amount += $item['sub_total'];
 }
 
 $shipping = $db->getAll("select * from shipping order by id asc");
