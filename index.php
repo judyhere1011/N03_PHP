@@ -17,9 +17,9 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                     <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 re-padding">
                         <div class="product_item">
                             <div class="product-image">
-                                <a href="product.php"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
+                                <a href="product.php?id=<?php echo $value['id'] ?>"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
                             </div>
-                            <p class="product_name"><a href="product.php"><?php echo $value['name']; ?></a></p>
+                            <p class="product_name"><a href="product.php?id=<?php echo $value['id'] ?>"><?php echo $value['name']; ?></a></p>
                             <?php
                             if ($value['discount'] > 0) {
                                 $new_price = $value['price'] - $value['discount'];
@@ -52,7 +52,7 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                             $sl = $result['totalproduct'];
                             if ($sl > 0) {
                             ?>
-                                <a href="cart_edit.php"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
+                                <a href="cart_edit.php?id=<?php echo $value['id']; ?>"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
                             <?php } else { ?>
                                 <a style="pointer-events: none;"><button style="pointer-events: none;background-color: #333;border: none " class='btn btn-info'>Hết hàng</button></a>
                             <?php } ?>
@@ -76,9 +76,9 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                     <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 re-padding">
                         <div class="product_item">
                             <div class="product-image">
-                                <a href="product.php"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
+                                <a href="product.php?id=<?php echo $value['id'] ?>"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
                             </div>
-                            <p class="product_name"><a href="product.php"><?php echo $value['name']; ?></a></p>
+                            <p class="product_name"><a href="product.php?id=<?php echo $value['id'] ?>"><?php echo $value['name']; ?></a></p>
                             <?php
                             if ($value['discount'] > 0) {
                                 $new_price = $value['price'] - $value['discount'];
@@ -110,7 +110,7 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                             $sl = $result['totalproduct'];
                             if ($sl > 0) {
                             ?>
-                                <a href="cart_edit.php"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
+                                <a href="cart_edit.php?id=<?php echo $value['id']; ?>"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
                             <?php } else { ?>
                                 <a style="pointer-events: none;"><button style="pointer-events: none;background-color: #333;border: none " class='btn btn-info'>Hết hàng</button></a>
                             <?php } ?>
@@ -133,9 +133,9 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                     <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 re-padding">
                         <div class="product_item">
                             <div class="product-image">
-                                <a href="product.php"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
+                                <a href="product.php?id=<?php echo $value['id'] ?>"><img src="./public/images/product/<?php echo $value['image_link']; ?>" alt="" class=""></a>
                             </div>
-                            <p class="product_name"><a href="product.php"><?php echo $value['name']; ?></a></p>
+                            <p class="product_name"><a href="product.php?id=<?php echo $value['id'] ?>"><?php echo $value['name']; ?></a></p>
                             <?php
                             if ($value['discount'] > 0) {
                                 $new_price = $value['price'] - $value['discount'];
@@ -167,7 +167,7 @@ $view_product = $db->getAll("select * from product order by view desc limit 4");
                             $sl = $result['totalproduct'];
                             if ($sl > 0) {
                             ?>
-                                <a href="cart_edit.php"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
+                                <a href="cart_edit.php?id=<?php echo $value['id']; ?>"><button class='btn btn-info'><span class="fa fa-shopping-cart" aria-hidden="true"></span> Thêm giỏ hàng</button></a>
                             <?php } else { ?>
                                 <a style="pointer-events: none;"><button style="pointer-events: none;background-color: #333;border: none " class='btn btn-info'>Hết hàng</button></a>
                             <?php } ?>
