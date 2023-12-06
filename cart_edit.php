@@ -16,7 +16,7 @@ if (isset($_GET['id'])) {
             $size_id = $_GET['size_id'];
             $size_detail = $db->getFirst("select * from sizedetail where product_id = $id and size_id = $size_id");
             if (!$size_detail || $size_detail['quantity'] == 0) {
-                header('location: ./cart.php');
+                header('location: ./index.php');
             }
             $size_id = $size_detail['size_id'];
             $max_quantity_size = $size_detail['quantity'];
@@ -42,7 +42,7 @@ if (isset($_GET['id'])) {
                 $cart->plusQuantity($product['id'], $size_id, $max_quantity_size);
             }
         }
-        header('location: ./cart.php');
+        header('location: ./index.php');
     }
 } else {
     header('location: ./index.php');
