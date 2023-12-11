@@ -1,82 +1,96 @@
-<?php 
-    session_start();
-    include './layout/head.php';
+<?php
+require('../core/database.php');
+require('../core/flash.php');
 
+class AdminLogin
+{
+    private $db;
+    private $errors;
 
-    $title = "First Login";
-    if(isset($_POST['login_btn'])){
-        
-        $email = trim($_POST['email']);
-        $password = md5($_POST['password']);
+    public function __construct()
+    {
+        $this->db = new Database();
+        $this->errors = [];
+    }
 
-        // buoc1 so khop du lieu tu form vs db 
-        $check = mysqli_query($conn,"SELECT * FROM user WHERE email = '$email'");
+    public function handleLogin()
+    {
+        if (isset($_POST['login'])) {
+            $email = $_POST['email'];
+            $password = md5($_POST['password']);
+            $remember = isset($_POST['remember']);
 
-        $errors;
-        if(mysqli_num_rows($check) == 1){
-            $data = mysqli_fetch_assoc($check);
-            $pass = $data['password'];
+            $check = $this->db->getFirst("SELECT * FROM admin WHERE email = '$email' and password = '$password'");
 
-            $checPass = password_verify($pass);
+            if ($check) {
+                if ($remember) {
+                    setcookie('admin', serialize($check), time() + 3600 * 24 * 30, '/');
+                } else {
+                    $_SESSION['admin'] = $check;
+                }
 
-            if($checPass){
-              // lưu vao session 
-              $_SESSION['login'] = $data;
-
-              if(isset($_GET['url'])){
-                header('location: '.$_GET['url']);
-              } else {
-                 header('location: index.php');
-              }
-             
-            } else{
-              $title = "Mật khẩu không chính xác";
-              include 'header-modal.php';
+                Flash::set('message_success', 'Đăng nhập thành công');
+                header('location: ./index.php');
+            } else {
+                $this->errors['login'] = 'Tài khoản hoặc mật khẩu không đúng';
             }
-
-        } else{
-          $title = "Tài khoản không tồn tại";
-          include 'header-modal.php';
-        }      
+        }
     }
 
-    if (isset($_GET['register'])) {
-      echo "<script>alert('Đăng kí thành công')</script>";  
+    public function renderLoginForm()
+    {
+        ?>
+        <!DOCTYPE html>
+        <html>
+
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Đăng Nhập Trang Quản Trị</title>
+            <link href="./public/css/bootstrap.min.css" rel="stylesheet">
+            <link href="./public/css/styles.css" rel="stylesheet">
+        </head>
+
+        <body>
+            <div class="row">
+                <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2 col-md-4 col-md-offset-4">
+                    <div class="login-panel panel panel-default">
+                        <div class="panel-heading" style=" background-color: #30a5ff;margin-bottom: 10px;color: white;text-align: center;font-size: 25px;">ĐĂNG NHẬP</div>
+                        <div class="panel-body">
+                            <form role="form" method="post">
+                                <fieldset>
+                                    <div class="form-group">
+                                        <input class="form-control" placeholder="E-mail" name="email" type="email" autofocus="" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" placeholder="Mật khẩu" name="password" type="password" value="" required>
+                                    </div>
+                                    <?php if (isset($this->errors['login'])) : ?>
+                                        <div class="alert bg-danger" role="alert" id="AlertBox">
+                                            <?= $this->errors['login'] ?>
+                                        </div>
+                                    <?php endif ?>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input name="remember" type="checkbox" value="Remember Me">Ghi nhớ đăng nhập
+                                        </label>
+                                    </div>
+                                    <button type="submit" name="login" class="btn btn-primary">Đăng nhập</button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+
+        </html>
+        <?php
     }
- ?>
+}
 
-<html>
-<head>
-    <title> Login </title>
-</head>
-<body>
-<section class="my-5 py-5" style="background-color: #eee;">
-    <div class="container text-center mt-3 pt-5">
-        <h2 class="form-weight-bold">Đăng Nhập</h2>
-        <hr class="mx-auto">
-    </div>  
-    <div class="mx-auto container">
-        <form id="login-form" action="login.php" method="POST">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="text" class="form-control" id="login-email" name="email" placeholder="Địa chỉ Email" required/>
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" class="form-control" id="login-password" name="password" placeholder="Mật khẩu" required/>
-            </div>
-            <div class="form-group">
-                <input type="submit" class="btn" id="login-btn" name="login-btn" value="Đăng nhập"/>
-            </div>
-            <div class="form-group">
-                <a id="register-url" class="btn" href="register.php">Bạn chưa có tài khoản? Đăng ký ngay</a>
-            </div>
-        </form>
-    </div>
-</section>
-</body>
-</html> 
-
-<?php 
-  include './layout/footer.php'
+// Sử dụng đối tượng AdminLogin
+$adminLogin = new AdminLogin();
+$adminLogin->handleLogin();
+$adminLogin->renderLoginForm();
 ?>
