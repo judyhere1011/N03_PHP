@@ -1,8 +1,11 @@
-<?php 
+<?php
 session_start();
-require('./core/cart.php');
-
-$cart = new Cart;
-$cart->empty();
+class Cart {
+    public function emptyCart() {
+        $_SESSION['cart'] = [];
+    }
+}
+$cart = new Cart();
+$cart->emptyCart();
 header('location: ./cart.php');
 ?>
