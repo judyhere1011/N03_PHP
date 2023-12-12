@@ -1,30 +1,31 @@
 <?php 
     include './layout/head.php';
+    require './user.php';
+
     $title = "";
-    if(isset($_POST['name'])){
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = $_POST['name'];
         $email = $_POST['email'];
-        $check = mysqli_query($conn, "SELECT * FROM user WHERE email = '$email'");
-        if (mysqli_num_rows($check) == 1) {
-          $title = "Email đã tồn tại, vui lòng nhập email khác";
-          include 'header-modal.php';
-        } else {
-          $phone = $_POST['phone'];
-          $password = $_POST['password'];
-          $confirmPassword = $_POST['confirm_password'];
-          if (strcmp($password, $confirmPassword) != 0) {
+        $phone = $_POST['phone'];
+        $address = $_POST['address'];
+        $password = $_POST['password'];
+        $confirmPassword = $_POST['confirm_password'];
+    
+        if ($password !== $confirmPassword) {
             $title = "Mật khẩu xác nhận không khớp";
-            include 'header-modal.php';
-          } else {
-            $pass = password_hash($password, PASSWORD_DEFAULT);
+            echo "<script>alert('" . $title . "');</script>";
+        } else {
+            $user = new User($name, $email, $phone, $address, $password);
             
-            $query = mysqli_query($conn,"INSERT INTO user (name,email,password, phone) VALUES ('$name','$email','$pass','$phone')");
-            header('location: login.php?register=true');
-          }
+            if ($user->register()) {
+                header('Location: login.php');
+            }
+            
         }
     }
     
- ?>
+?>
      
 <section class="my-5 py-5" style="background-color: #eee;">
     <div class="container text-center mt-3 pt-5">
@@ -32,7 +33,7 @@
         <hr class="mx-auto">
     </div>  
     <div class="mx-auto container">
-        <form id="register-form">
+        <form id="register-form" method="POST">
             <div class="form-group">
                 <label>Họ tên</label>
                 <input type="text" class="form-control" id="register-name" name="name" placeholder="Nhập họ tên" required/>
@@ -55,7 +56,7 @@
             </div>
             <div class="form-group">
                 <label>Xác nhận mật khẩu</label>
-                <input type="password" class="form-control" id="register-confirm-password" name="confirm-password" placeholder="Nhập lại mật khẩu" required/>
+                <input type="password" class="form-control" id="register-confirm-password" name="confirm_password" placeholder="Nhập lại mật khẩu" required/>
             </div>
 
             <div class="form-group">
