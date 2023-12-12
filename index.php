@@ -89,7 +89,7 @@ include('./layout/head.php');
 
 $productController->displayPanel("Sản phẩm mới", "product_new.php", $new_product);
 $productController->displayPanel("Sản phẩm bán chạy", "ban_chay.php", $hot_product);
-$productController->displayPanel("Sản phẩm xem nhiều", "product_view.php", $view_product);
+$productController->displayPanel("Sản phẩm được xem nhiều", "product_view.php", $view_product);
 
 include('./layout/footer.php');
 ?>
