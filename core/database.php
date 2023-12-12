@@ -8,13 +8,17 @@ class Database
     {
         $host = 'localhost';
         $username = 'root';
-        $password = 'hmai1011';
+        $password = '';
         $database = 'shopthoitrang';
         $this->connect = mysqli_connect($host, $username, $password, $database);
         $this->connect->set_charset('utf8');
         if ($this->connect->connect_error) {
             die($this->connect->connect_error);
         }
+    }
+
+    public function getConnection() {
+        return $this->connect;
     }
 
     public function getAll($sql)
@@ -72,7 +76,12 @@ class Database
     {
         return $this->connect->query($sql);
     }
-    
+
+    public function getOne($sql) {
+        $result = $this->connect->query($sql);
+        $row = $result->fetch_assoc();
+        return $row;
+    }
 }
 
 $db = new Database;
