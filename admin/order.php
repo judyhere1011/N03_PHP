@@ -4,33 +4,49 @@ require('../core/flash.php');
 require('../core/pagination.php');
 require('./middleware.php');
 
-$sql = "SELECT * from transaction order by id desc";
-$sql_total = "SELECT * from transaction";
+class OrderManager {
+    private $db;
+    private $per_page = 10;
+    private $current_page;
 
-// phân trang
-$per_page = 10;
-$current_page = 1;
-if (isset($_GET['page'])) {
-    $current_page = $_GET['page'];
+    public function __construct($db) {
+        $this->db = $db;
+        $this->current_page = isset($_GET['page']) ? $_GET['page'] : 1;
+    }
+
+    public function getOrders() {
+        $offset = ($this->current_page - 1) * $this->per_page;
+        $sql = "SELECT * FROM transaction ORDER BY id DESC LIMIT $offset, $this->per_page";
+        return $this->db->getAll($sql);
+    }
+
+    public function getTotalOrders() {
+        $sql_total = "SELECT COUNT(*) as total FROM transaction";
+        $result = $this->db->getOne($sql_total);
+        return $result['total'];
+    }
+
+    public function renderPagination() {
+        $total = $this->getTotalOrders();
+        $total_page = ceil($total / $this->per_page);
+        $pagination = new Pagination($total_page, $this->current_page);
+        return $pagination->render();
+    }
 }
-$offset = ($current_page - 1) * $per_page;
-$total = $db->count($sql_total);
-$total_page = ceil($total / $per_page);
-$sql .= " LIMIT $offset,$per_page";
-$pagination = new Pagination($total_page, $current_page);
 
-$transaction = $db->getAll($sql);
-
+$orderManager = new OrderManager($db);
+$transaction = $orderManager->getOrders();
 ?>
+
 <?php include('./layout/head.php'); ?>
+
 <div class="row">
     <ol class="breadcrumb">
-        <li><a href="#"><svg class="glyph stroked home">
-                    <use xlink:href="#stroked-home"></use>
-                </svg></a></li>
+        <li><a href="#"><svg class="glyph stroked home"><use xlink:href="#stroked-home"></use></svg></a></li>
         <li class="active">Đơn đặt hàng</li>
     </ol>
 </div>
+
 <div class="row">
     <div class="col-lg-12">
         <div class="panel panel-info">
@@ -81,16 +97,16 @@ $transaction = $db->getAll($sql);
                                         ?>
                                     </td>
                                     <td class="list_td aligncenter">
-                                        <a href="don_hang_detail.php?id=<?php echo $value['id'] ?>" title="Chi tiết"><span class="glyphicon glyphicon-list-alt"></span></a>&nbsp;&nbsp;&nbsp;
+                                        <a href="order_detail.php?id=<?php echo $value['id'] ?>" title="Chi tiết"><span class="glyphicon glyphicon-list-alt"></span></a>&nbsp;&nbsp;&nbsp;
                                         <?php if ($value['status'] != 1) { ?>
-                                            <a href="don_hang_delete.php?id=<?php echo $value['id'] ?>" title="Xóa"> <span class="glyphicon glyphicon-remove" onclick=" return confirm('Bạn chắc chắn muốn xóa')"></span> </a>
+                                            <a href="order_delete.php?id=<?php echo $value['id'] ?>" title="Xóa"> <span class="glyphicon glyphicon-remove" onclick=" return confirm('Bạn chắc chắn muốn xóa')"></span> </a>
                                         <?php } ?>
                                     </td>
                                 </tr>
                             <?php } ?>
                         </tbody>
                     </table>
-                    <?= $pagination->render() ?>
+                    <?= $orderManager->renderPagination() ?>
                 </div>
             </div>
         </div>
