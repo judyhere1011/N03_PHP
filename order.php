@@ -1,85 +1,104 @@
-
-
 <?php
 require('./core/database.php');
 require('./core/flash.php');
 require('./core/cart.php');
 
-$cart = new Cart;
-$carts = $cart->all($db);
-$total_amount = 0;
+class OrderProcess {
+    private $db;
+    private $cart;
+
+    public function __construct($db) {
+        $this->db = $db;
+        $this->cart = new Cart;
+    }
+
+    public function processOrder() {
+        $carts = $this->cart->all($this->db);
+        $total_amount = 0;
 
         foreach ($carts as $item) {
             $total_amount += $item['sub_total'];
         }
 
-if (isset($_POST['submit'])) {
-    $adress_str = $_POST['adress'] . ' - ' . $_POST['area'];
-    $ship = $_POST['ship_money'];
-    $mess2 = 'Phí Ship:' . ' ' . strval(number_format($ship)) . 'VNĐ';
-    $user_id = 0;
-    $data = [
-        'user_id' => $user_id,
-        'user_name' => $_POST['name'],
-        'user_email' => $_POST['email'],
-        'user_address' => $adress_str,
-        'user_phone' => $_POST['phone'],
-        'message' => $mess2,
-        'amount' => $total_amount + $ship,
-        'payment' => '',
-    ];
-    $kq = $db->create('transaction', $data);
-    $transaction_id = $db->getLastId('transaction');
-    foreach ($carts as $items) {
-        $data = [
-            'transaction_id' => $transaction_id['id'],
-            'product_id' => $items['id'],
-            'qty' => $items['quantity'],
-            'amount' => $items['sub_total'],
-            'size_id' => $items['size_id']
-        ];
-        $db->create('order', $data);
+        if (isset($_POST['submit'])) {
+            $adress_str = $_POST['adress'] . ' - ' . $_POST['area'];
+            $ship = $_POST['ship_money'];
+            $mess2 = 'Phí Ship:' . ' ' . strval(number_format($ship)) . 'VNĐ';
+            $user_id = 0;
 
-        //Cộng lượt mua
-        $product = $db->getById('product', $items['id']);
-        $sl = $product['buyed'] + intval($items['quantity']);
-        $data4 = [
-            'buyed' => $sl
-        ];
-        $db->update('product', $data4, $product['id']);
+            $data = [
+                'user_id' => $user_id,
+                'user_name' => $_POST['name'],
+                'user_email' => $_POST['email'],
+                'user_address' => $adress_str,
+                'user_phone' => $_POST['phone'],
+                'message' => $mess2,
+                'amount' => $total_amount + $ship,
+                'payment' => '',
+            ];
 
-        //trừ số lượng
-        $size_detail = $db->getFirst("select * from sizedetail where product_id = {$items['id']} and size_id = {$items['size_id']}");
-        if ($size_detail) {
-            $id_update_size = $size_detail['id'];
-            $amount = $size_detail['quantity'] - $items['quantity'];
-            if ($id_update_size != 0 && $amount > 0) {
-                $data2 = [
+            $kq = $this->db->create('transaction', $data);
+            $transaction_id = $this->db->getLastId('transaction');
+
+            foreach ($carts as $items) {
+                $data = [
+                    'transaction_id' => $transaction_id['id'],
                     'product_id' => $items['id'],
-                    'size_id' => $items['size_id'],
-                    'quantity' => $amount,
+                    'qty' => $items['quantity'],
+                    'amount' => $items['sub_total'],
+                    'size_id' => $items['size_id']
                 ];
-                $db->update('sizedetail', $data2, $id_update_size);
-            } else if ($id_update_size != 0 && $amount == 0) {
-                $db->delete('sizedetail', $id_update_size);
+
+                $this->db->create('order', $data);
+
+                // Cộng lượt mua
+                $product = $this->db->getById('product', $items['id']);
+                $sl = $product['buyed'] + intval($items['quantity']);
+                $data4 = [
+                    'buyed' => $sl
+                ];
+                $this->db->update('product', $data4, $product['id']);
+
+                // Trừ số lượng
+                $size_detail = $this->db->getFirst("SELECT * FROM sizedetail WHERE product_id = {$items['id']} AND size_id = {$items['size_id']}");
+
+                if ($size_detail) {
+                    $id_update_size = $size_detail['id'];
+                    $amount = $size_detail['quantity'] - $items['quantity'];
+
+                    if ($id_update_size != 0 && $amount > 0) {
+                        $data2 = [
+                            'product_id' => $items['id'],
+                            'size_id' => $items['size_id'],
+                            'quantity' => $amount,
+                        ];
+                        $this->db->update('sizedetail', $data2, $id_update_size);
+                    } elseif ($id_update_size != 0 && $amount == 0) {
+                        $this->db->delete('sizedetail', $id_update_size);
+                    }
+                }
             }
+
+            $this->cart->empty();
+            Flash::set('message', "Đặt hàng thành công, chúng tôi sẽ liên hệ với bạn để giao hàng");
+            echo '<script>';
+            echo 'alert("Đặt hàng thành công, chúng tôi sẽ liên hệ với bạn để giao hàng");';
+            echo 'window.location.href = "./index.php";';
+            echo '</script>';
         }
+
+        if (count($carts) == 0) {
+            header('location: ./index.php');
+        }
+
+        $shipping = $this->db->getAll("SELECT * FROM shipping ORDER BY id ASC");
     }
-    $cart->empty();
-    Flash::set('message', "Đặt hàng thành công, chúng tôi sẽ liên hệ với bạn để giao hàng");
-    echo '<script>';
-    echo 'alert("Đặt hàng thành công, chúng tôi sẽ liên hệ với bạn để giao hàng");';
-    echo 'window.location.href = "./index.php";';
-    echo '</script>';
 }
 
-if (count($carts) == 0) {
-    header('location: ./index.php');
-}
-
-$shipping = $db->getAll("select * from shipping order by id asc");
-
+$orderProcess = new OrderProcess($db);
+$orderProcess->processOrder();
 ?>
+
 <?php include('./layout/head.php') ?>
 <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 clearpadding" style="margin-top: 15px;">
@@ -152,7 +171,9 @@ $shipping = $db->getAll("select * from shipping order by id asc");
                                             <tr>
                                                 <td>Tổng tiền</td>
                                                 <td>
-                                                    <span class="money"><?php echo number_format($total_amount); ?></span>
+                                                    <?php if (isset($total_amount)): ?>
+                                                        <span class="money"><?php echo number_format($total_amount); ?></span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td>VNĐ</td>
                                             </tr>
@@ -166,8 +187,10 @@ $shipping = $db->getAll("select * from shipping order by id asc");
                                             <tr>
                                                 <td>Thành tiền</td>
                                                 <td style="color: red;max-width: 50px">
-                                                    <span id="total_amount"><?php echo number_format($total_amount); ?></span>
-                                                    <input type="hidden" name="tempt_amount" value="<?php echo $total_amount; ?>" />
+                                                    <?php if (isset($total_amount)): ?>
+                                                        <span id="total_amount"><?php echo number_format($total_amount); ?></span>
+                                                        <input type="hidden" name="tempt_amount" value="<?php echo $total_amount; ?>" />
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td>VNĐ</td>
                                             </tr>
@@ -197,7 +220,8 @@ $shipping = $db->getAll("select * from shipping order by id asc");
     </div>
 </div>
 <?php include('./layout/footer.php') ?>
-<script type="text/javascript">
+
+<!-- <script type="text/javascript">
     $(document).ready(function() {
         $.ajax({
             url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/province',
@@ -225,129 +249,94 @@ $shipping = $db->getAll("select * from shipping order by id asc");
     function formatNumber(num) {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
     }
-</script>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('#province').change(function(envent) {
-            var province = $('#province').val();
-            province = parseInt(province);
-
-            $('#district')
-                .empty()
-                .append('<option value>--Chọn Quận,Huyện--</option>');
-            $('#ward')
-                .empty()
-                .append('<option value>--Chọn Phường,Xã--</option>');
-            $('#ship')
-                .empty()
-                .append('<option value>--Chọn Dịch Vụ--</option>');
-
-            $('#ship_money').val('0');
-            $('#ship_label').html('0');
-            var total_count = <?php echo $total_amount ?>;
-            $('#total_amount').html(formatNumber(total_count));
-
-
-            $.ajax({
-                url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/district',
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'token': '464ef410-6fc8-11ec-9054-0a1729325323',
-                },
-                data: {
-                    province_id: province
-                },
-                contentType: 'application/json; charset=utf-8',
-                success: function(result) {
-                    // CallBack(result);
-                    $.each(result, function(key, value) {
-                        if (key.includes("data")) {
-                            $.each(value, function(key2, value2) {
-                                $('<option>').val(value2.DistrictID).text(value2.DistrictName).appendTo('#district');
-                            })
-                        }
-
-                    })
-
-                },
-                error: function(error) {
-
-                }
-            });
-        });
-    });
-</script>
+</script> -->
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#district').change(function(envent) {
-            var district = $('#district').val();
-            district = parseInt(district);
-            $('#ward')
-                .empty()
-                .append('<option value>--Chọn Phường,Xã--</option>');
-            $('#ship')
-                .empty()
-                .append('<option value>--Chọn Dịch Vụ Vận Chuyển--</option>');
-            $('#ship_money').val('0');
-            $('#ship_label').html('0');
-            var total_count = <?php echo $total_amount ?>;
-            $('#total_amount').html(formatNumber(total_count));
-            $.ajax({
-                url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/ward',
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'token': '464ef410-6fc8-11ec-9054-0a1729325323',
-                },
-                data: {
-                    district_id: district
-                },
-                contentType: 'application/json; charset=utf-8',
-                success: function(result) {
-                    // CallBack(result);
-                    $.each(result, function(key, value) {
-                        if (key.includes("data")) {
-                            $.each(value, function(key2, value2) {
-                                $('<option>').val(value2.WardCode).text(value2.WardName).appendTo('#ward');
-                            })
-                        }
+    // Tải tỉnh/thành phố khi trang web được tải
+    $.ajax({
+        url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/province',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'token': '464ef410-6fc8-11ec-9054-0a1729325323'
+        },
+        contentType: 'application/json; charset=utf-8',
+        success: function(result) {
+            $.each(result, function(key, value) {
+                if (key.includes("data")) {
+                    $.each(value, function(key2, value2) {
+                        $('<option>').val(value2.ProvinceID).text(value2.ProvinceName).appendTo('#province');
                     })
-                },
-                error: function(error) {}
-            });
-            var dis = <?php echo $shipping[0]['id_district'] ?>;
-            $.ajax({
-                url: 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services',
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'token': '464ef410-6fc8-11ec-9054-0a1729325323',
-                },
-                data: {
-                    "shop_id": 2413002,
-                    "from_district": dis,
-                    "to_district": district
-                },
-                contentType: 'application/json; charset=utf-8',
-                success: function(result) {
-                    // CallBack(result);
-                    $.each(result, function(key, value) {
-                        if (key.includes("data")) {
-                            $.each(value, function(key2, value2) {
-                                $('<option>').val(value2.service_id).text("GHN_Đường bộ").appendTo('#ship');
-                            })
-                        }
-                    })
-                },
-                error: function(error) {
-                    alert("Không thể giao hàng đến Quận,Huyện này!");
                 }
             });
+        },
+        error: function(error) {}
+    });
+
+    // Tải quận/huyện khi chọn tỉnh/thành phố
+    $('#province').change(function(event) {
+        var provinceId = $(this).val();
+        $('#district').empty().append('<option value>--Chọn Quận,Huyện--</option>');
+        $('#ward').empty().append('<option value>--Chọn Phường,Xã--</option>');
+
+        $.ajax({
+            url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/district',
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                'token': '464ef410-6fc8-11ec-9054-0a1729325323',
+            },
+            data: {
+                province_id: provinceId
+            },
+            contentType: 'application/json; charset=utf-8',
+            success: function(result) {
+                $.each(result, function(key, value) {
+                    if (key.includes("data")) {
+                        $.each(value, function(key2, value2) {
+                            $('<option>').val(value2.DistrictID).text(value2.DistrictName).appendTo('#district');
+                        })
+                    }
+                });
+            },
+            error: function(error) {
+                console.error('Lỗi khi lấy danh sách quận:', error);
+            }
         });
     });
+
+    // Tải xã/phường khi chọn quận/huyện
+    $('#district').change(function(event) {
+        var districtId = $(this).val();
+        $('#ward').empty().append('<option value>--Chọn Phường,Xã--</option>');
+
+        $.ajax({
+            url: 'https://online-gateway.ghn.vn/shiip/public-api/master-data/ward',
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                'token': '464ef410-6fc8-11ec-9054-0a1729325323',
+            },
+            data: {
+                district_id: districtId
+            },
+            contentType: 'application/json; charset=utf-8',
+            success: function(result) {
+                $.each(result, function(key, value) {
+                    if (key.includes("data")) {
+                        $.each(value, function(key2, value2) {
+                            $('<option>').val(value2.WardCode).text(value2.WardName).appendTo('#ward');
+                        })
+                    }
+                });
+            },
+            error: function(error) {}
+        });
+    });
+});
 </script>
+
 <script type="text/javascript">
     $(document).ready(function() {
         $('#ward').change(function(envent) {
@@ -398,60 +387,120 @@ $shipping = $db->getAll("select * from shipping order by id asc");
         });
     });
 </script>
+
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#ship').change(function(envent) {
-            $('#ship_money').val('0');
-            $('#ship_label').html('0');
-            var total_count = <?php echo $total_amount ?>;
-            $('#total_amount').html(formatNumber(total_count));
-            var ship = $('#ship').val();
-            ship = parseInt(ship);
-            var district = $('#district').val();
-            district = parseInt(district);
-            var ward = $('#ward').val();
-            ward = parseInt(ward);
-            var money = $('.money');
-            var money_total = money.text();
-            money_total = parseFloat(money_total) * 100;
-            var s1 = $('#ship_label');
-            $.ajax({
-                url: 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
-                type: 'GET',
-                dataType: 'json',
-                headers: {
-                    'token': '464ef410-6fc8-11ec-9054-0a1729325323',
-                },
-                data: {
-                    "service_id": ship,
-                    "insurance_value": money_total,
-                    "coupon": null,
-                    "from_district_id": <?php echo $shipping[0]['id_district'] ?>,
-                    "to_district_id": district,
-                    "to_ward_code": ward,
-                    "height": 15,
-                    "length": 15,
-                    "weight": 1000,
-                    "width": 15
-                },
-                contentType: 'application/json; charset=utf-8',
-                success: function(result) {
-                    // CallBack(result);
-                    $.each(result, function(key, value) {
-                        if (key.includes("data")) {
-                            $.each(value, function(key2, value2) {
-                                if (key2.includes("total")) {
-                                    $('#ship_money').val(parseFloat(value2));
-                                    $('#ship_label').html(formatNumber(value2));
-                                    var total_count = <?php echo $total_amount ?> + value2;
-                                    $('#total_amount').html(formatNumber(total_count));
-                                }
-                            })
-                        }
-                    })
-                },
-                error: function(error) {}
-            });
+    $(document).ready(function () {
+    // Lấy dữ liệu dịch vụ vận chuyển khi phường được chọn
+    $('#ward').change(function (event) {
+        console.log('Ward changed'); // Kiểm tra xem sự kiện "change" có được kích hoạt không
+        $('#ship')
+            .empty()
+            .append('<option value>--Chọn Dịch Vụ Vận Chuyển--</option>');
+        $('#ship_money').val('0');
+        $('#ship_label').html('0');
+
+        var total_count = <?php echo $total_amount ?>;
+        $('#total_amount').html(formatNumber(total_count));
+
+        var district = $('#district').val();
+        district = parseInt(district);
+
+        var a = $("#province option:selected").text();
+        var b = $("#district option:selected").text();
+        var c = $("#ward option:selected").text();
+        var str = a + ", " + b + ", " + c;
+        $('#adress').val(str);
+
+        var dis = <?php echo $shipping[0]['id_district'] ?>;
+
+        $.ajax({
+            url: 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services',
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                'token': '464ef410-6fc8-11ec-9054-0a1729325323',
+            },
+            data: {
+                "shop_id": 2413002,
+                "from_district": dis,
+                "to_district": district
+            },
+            contentType: 'application/json; charset=utf-8',
+            success: function (result) {
+                console.log('API response:', result); // Kiểm tra phản hồi từ API
+                $.each(result, function (key, value) {
+                    if (key.includes("data")) {
+                        $.each(value, function (key2, value2) {
+                            if (key2 == 0) {
+                                $('<option>').val(value2.service_id).text("GHN_Đường bộ").appendTo('#ship');
+                            }
+                        })
+                    }
+                })
+            },
+            error: function (error) {
+                alert("Không thể giao hàng đến Quận,Huyện này!");
+            }
+        });
+    });
+});
+
+    // Cập nhật phí vận chuyển khi dịch vụ vận chuyển được chọn
+    $('#ship').change(function(envent) {
+        $('#ship_money').val('0');
+        $('#ship_label').html('0');
+
+        var total_count = <?php echo $total_amount ?>;
+        $('#total_amount').html(formatNumber(total_count));
+
+        var ship = $('#ship').val();
+        ship = parseInt(ship);
+
+        var district = $('#district').val();
+        district = parseInt(district);
+
+        var ward = $('#ward').val();
+        ward = parseInt(ward);
+
+        var money = $('.money');
+        var money_total = money.text();
+        money_total = parseFloat(money_total) * 100;
+
+        $.ajax({
+            url: 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
+            type: 'GET',
+            dataType: 'json',
+            headers: {
+                'token': '464ef410-6fc8-11ec-9054-0a1729325323',
+            },
+            data: {
+                "service_id": ship,
+                "insurance_value": money_total,
+                "coupon": null,
+                "from_district_id": <?php echo $shipping[0]['id_district'] ?>,
+                "to_district_id": district,
+                "to_ward_code": ward,
+                "height": 15,
+                "length": 15,
+                "weight": 1000,
+                "width": 15
+            },
+            contentType: 'application/json; charset=utf-8',
+            success: function(result) {
+                $.each(result, function(key, value) {
+                    if (key.includes("data")) {
+                        $.each(value, function(key2, value2) {
+                            if (key2.includes("total")) {
+                                $('#ship_money').val(parseFloat(value2));
+                                $('#ship_label').html(formatNumber(value2));
+                                var total_count = <?php echo $total_amount ?> + value2;
+                                $('#total_amount').html(formatNumber(total_count));
+                            }
+                        })
+                    }
+                })
+            },
+            error: function(error) {}
         });
     });
 </script>
