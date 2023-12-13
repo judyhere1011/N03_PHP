@@ -1,5 +1,6 @@
 <?php
 require_once('./core/database.php');
+$db = new Database();
 require_once('./core/cart.php');
 
 $cart = new Cart;
