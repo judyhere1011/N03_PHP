@@ -3,8 +3,7 @@ require('../core/database.php');
 require('../core/flash.php');
 require('./middleware.php');
 
-class CatalogAdd
-{
+class CatalogAdd {
     private $db;
 
     public function __construct($db)
@@ -29,6 +28,7 @@ class CatalogAdd
 }
 
 $catalogAdd = new CatalogAdd($db);
+$list = $catalogAdd->getCatalogList();
 
 $data_form = [
     'name' => '',
