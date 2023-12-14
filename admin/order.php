@@ -99,7 +99,7 @@ $transaction = $orderManager->getOrders();
                                     <td class="list_td aligncenter">
                                         <a href="order_detail.php?id=<?php echo $value['id'] ?>" title="Chi tiết"><span class="glyphicon glyphicon-list-alt"></span></a>&nbsp;&nbsp;&nbsp;
                                         <?php if ($value['status'] != 1) { ?>
-                                            <a href="order_delete.php?id=<?php echo $value['id'] ?>" title="Xóa"> <span class="glyphicon glyphicon-remove" onclick=" return confirm('Bạn chắc chắn muốn xóa')"></span> </a>
+                                            <a href="order_delete.php?id=<?php echo $value['id'] ?>" title="Hủy"> <span class="glyphicon glyphicon-remove" onclick=" return confirm('Bạn chắc chắn muốn hủy đơn đặt hàng này')"></span> </a>
                                         <?php } ?>
                                     </td>
                                 </tr>

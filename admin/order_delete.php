@@ -56,7 +56,7 @@ class OrderDelete {
             }
 
             $this->db->delete('transaction', $id);
-            Flash::set('message_success', 'Xóa đơn đặt hàng thành công');
+            Flash::set('message_success', 'Hủy đơn đặt hàng thành công');
             header('location: ./order.php');
             exit();
         } else {

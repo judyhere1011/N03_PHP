@@ -69,12 +69,7 @@ class OrderDetail {
         echo "<th>Tên sản phẩm</th>";
         echo "<th>Số lượng</th>";
         echo "<th>Size</th>";
-        echo "<th>Tổng Giá</th>";
-    
-        if ($this->getTransactionStatus() == '0') {
-            echo "<th>Hành động</th>";
-        }
-    
+        echo "<th>Tổng Giá</th>";   
         echo "</tr>";
         echo "</thead>";
         echo "<tbody>";
@@ -88,14 +83,7 @@ class OrderDetail {
                 echo "<td><img src='../public/images/product/" . $value['image_link'] . "' alt='' style='width: 50px;float:left;margin-right: 10px;'><strong>" . $value['name'] . "</strong></td>";
                 echo "<td style='vertical-align: middle'><strong>" . $value['qty'] . "</strong></td>";
                 echo "<td style='vertical-align: middle'><strong>" . $value['size_name'] . "</strong></td>";
-                echo "<td style='vertical-align: middle'>" . number_format($value['price']) . " VNĐ</td>";
-    
-                if ($this->transaction['status'] == '0') {
-                    echo "<td class='list_td aligncenter'>";
-                    echo "<a href='./order_detail_delete.php?id=" . $value['order_id'] . "' title='Xóa'> <span class='glyphicon glyphicon-remove' onclick=' return confirm(\"Bạn chắc chắn muốn xóa\")'></span> </a>";
-                    echo "</td>";
-                }
-    
+                echo "<td style='vertical-align: middle'>" . number_format($value['price']) . " VNĐ</td>";  
                 echo "</tr>";
             }
         }
