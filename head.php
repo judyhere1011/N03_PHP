@@ -1,4 +1,6 @@
 <?php
+// var_dump($_SESSION);
+// session_start();
 require_once('./core/database.php');
 $db = new Database();
 require_once('./core/cart.php');
@@ -113,7 +115,7 @@ $current_page = basename($_SERVER["SCRIPT_FILENAME"]);
                                 <li><a href="dang_nhap.php>">Đăng nhập</a></li>
                             <?php } else { ?>
                                 <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $user['name']; ?><span class="caret"></span></a>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo echo $_SESSION['user']['name']; ?><span class="caret"></span></a>
                                     <ul class="dropdown-menu">
                                         <li><a href="user.php">Tài khoản</a></li>
                                         <li role="separator" class="divider"></li>
