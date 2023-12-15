@@ -66,8 +66,8 @@
             </div>
             <div class="footer__container-box">
                 <h3>FEEDBACK FORM</h3>
-                <p>Hãy phản hồi với chúng tôi tại 
-                    <a style="color: #ee4d2d;" href="">đây</a>
+                <p>Hãy phản hồi với chúng tôi 
+                    <a style="color: #ee4d2d;" href="">tại đây</a>
                 </p>
                 <p>Hãy là người đầu tiên biết về hàng mới xuất hiện, xem sách, bán hàng & quảng cáo!</p>
             </div>
