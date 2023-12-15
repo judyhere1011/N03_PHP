@@ -2,7 +2,7 @@
 require('./core/database.php');
 require('./core/flash.php');
 
-class ProductManager
+class Search
 {
     private $db;
 
