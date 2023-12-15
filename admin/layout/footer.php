@@ -1,95 +1,61 @@
-<style>
-    .footer__container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(23rem, 1fr));
-        gap: 1.5rem;
-        padding-bottom: 2rem;
-        margin: 0 72px;
-    }
-
-    .box-link {
-        display: block;
-        font-size: 14px;
-        color: #b7b7b7;
-        margin: 10px 0;
-    }
-
-    .footer__credit {
-        text-align: center;
-        margin-top: 20px;
-        padding: 20px 10px 10px 10px;
-        font-size: 14px;
-        color: #b7b7b7;
-        border-top: 1px solid #b2b2b2;
-    }
-</style>
-</div>
-    <div class="row" style="display: block;margin-bottom: 100px"></div>
-    <footer class="footer" id="footer">
-        <div class="footer__container">
-            <div class="footer__container-box">
-                <h3 style="background-color: #fff; padding: 10px;">
-                    <a href="./" style="pointer-events: none">
-                        <img src="./public/images/logo.png" alt="" class="img-responsive">
-                    </a>
-                </h3>
-                <p style="font-size:14px; color: #b7b7b7;">
-                    Khách hàng là trọng tâm trong mô hình kinh doanh độc đáo của chúng tôi, bao gồm cả sự thiết kế.
-                </p>
-                <div>
-                    <img src="./public/images/payment2.png" alt="" style="margin-top: 2rem; width: 100%;">
-                </div>
-            </div>
-            <div class="footer__container-box">
-                <h3>NYL Shopping</h3>
-                <a href="#" class="box-link">
-                    Sản phẩm mới
-                </a>
-                <a href="#" class="box-link">
-                    Sản phẩm bán chạy
-                </a>
-                <a href="#" class="box-link">
-                    Sản phẩm khuyến mại
-                </a>
-            </div>
-            <div class="footer__container-box">
-                <h3>NYL SHOP</h3>
-                <a href="#home" class="box-link">
-                    Liên hệ với chúng tôi
-                </a>
-                <a href="#features" class="box-link">
-                    Phương thức thanh toán
-                </a>
-                <a href="#products" class="box-link">
-                    Giao hàng
-                </a>
-            </div>
-            <div class="footer__container-box">
-                <h3>FEEDBACK FORM</h3>
-                <p>Hãy phản hồi với chúng tôi 
-                    <a style="color: #ee4d2d;" href="feedback.php">tại đây</a>
-                </p>
-                <p>Hãy là người đầu tiên biết về hàng mới xuất hiện, xem sách, bán hàng & quảng cáo!</p>
-            </div>
-        </div>
-        <div class="footer__credit">
-            created by <span style="color: #ee4d2d;">nhóm PHP 03</span> | all rights reserved
-        </div>
-    </footer>
+    </div>
     <script src="./public/js/jquery-3.1.1.js" type="text/javascript"></script>
-    <script src="./public/bootstrap/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="./public/js/raty/jquery.raty.min.js"></script>
-
-    <script type="text/javascript">
-        $(function() {
-            $.fn.raty.defaults.path = "./public/js/raty/img'); ?>";
-            $('.raty').raty({
-                score: function() {
-                    return $(this).attr('data-score');
-                },
-                readOnly: true,
+    <script src="./public/js/lumino.glyphs.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"> </script>
+    <script src="./public/js/bootstrap.min.js"></script>
+    <script src="./public/js/chart.min.js"></script>
+    <script src="./public/js/chart-data.js"></script>
+    <script src="./public/js/easypiechart.js"></script>
+    <script src="./public/js/easypiechart-data.js"></script>
+    <script src="./public/js/bootstrap-datepicker.js"></script>
+    <script>
+        $(document).ready(function($) {
+            $("#logout").click(function(e) {
+                e.preventDefault();
+                window.location.href = "./logout.php"
             });
+            $('#calendar').datepicker({});
+            ! function($) {
+                $(document).on("click", "ul.nav li.parent > a > span.icon", function() {
+                    $(this).find('em:first').toggleClass("glyphicon-minus");
+                });
+                $(".sidebar span.icon").find('em:first').addClass("glyphicon-plus");
+            }(window.jQuery);
+            $(window).on('resize', function() {
+                if ($(window).width() > 768)
+                    $('#sidebar-collapse').collapse('show')
+            })
+            $(window).on('resize', function() {
+                if ($(window).width() <= 767)
+                    $('#sidebar-collapse').collapse('hide')
+            })
         });
     </script>
-</body>
-</html>
+    <script type="text/javascript">
+        $("#li-nav").click(function() {
+            var isSomethingTrue = $("#li-nav").hasClass("open");
+
+            if (isSomethingTrue) {
+                $('#li-nav').removeClass('open');
+            } else {
+                $('#li-nav').addClass('open');
+            }
+            $('ul').removeAttr("style");
+        });
+        let page = window.location.pathname.split('/')[window.location.pathname.split('/').length - 1]
+        document.querySelectorAll('.nav.menu li').forEach((e) => {
+            if (page == 'index.php') {
+                document.querySelector('.nav.menu li').classList.add('active')
+            } else if (page) {
+                if (page.includes(e.querySelector('a').getAttribute('href'))) {
+                    e.classList.add('active')
+                } else {
+                    e.classList.remove('active')
+                }
+            } else {
+                document.querySelector('.nav.menu li').classList.add('active')
+            }
+        })
+    </script>
+    </body>
+    </html>
